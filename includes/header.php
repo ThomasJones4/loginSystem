@@ -2,8 +2,14 @@
 // included on login.php, index.php
 ob_start();
 session_start();
+// Load composer
+//include('vendor/autoload.php');
+// initialise errors
 $GLOBALS['errors'] = "";
+// load authentication module
 include_once('authentication.php');
+// load site snippets
+//TODO: Create alternative to using site snippets. Possibly templates
 include_once('snippets.php');
 
 

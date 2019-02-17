@@ -1,3 +1,10 @@
 # Database Config #
 ###################
 config.php
+
+# Database Config #
+###################
+/includes/vendor/
+/includes/extLibs/
+composor.lock
+composor.json
