@@ -23,7 +23,7 @@ function sendEmail($emailToAddress, $emailToName, $Subject, $Body) {
 
 		//Recipients
 		$mail->setFrom('verification@projectbin.co.uk', 'ProjectBin Site Verification');
-		$mail->addAddress('Joe.User@zm7.uk', 'Joe User');     
+		$mail->addAddress($emailToAddress, $emailToName);     
 
 		//Content
 		$mail->isHTML(true);                                  // Set email format to HTML

@@ -4,9 +4,10 @@
 include_once('database.php');
 include_once('communication.php');
 
+$url = $_SERVER["REQUEST_URI"];
+
 if (!$_SESSION['auth']) {
 	// Not authenticated
-	$url = $_SERVER["REQUEST_URI"];
 	// substr($url, -12) != 'register.php' && substr($url, -9) != 'login.php' && substr($url, -47, 10) != 'verify.php' 
 	if (!contains($url, ['register.php', 'login.php', 'verify.php'])) {
 		// Not authenticated and not on a public page so redirect to login.php page
@@ -14,7 +15,7 @@ if (!$_SESSION['auth']) {
 		header("Location: login.php");
 		die("Redirecting");
 	} else {
-		// Not authenticated and on login.php or register.php
+		// Not authenticated and on login.php, register.php or verify.php
 		if (isset($_POST['login']) && isset($_POST['username']) && isset($_POST['password'])) {
 			// Not authenticated, login details sent from login.php
 			$uUsername = $_POST['username'];
@@ -26,12 +27,21 @@ if (!$_SESSION['auth']) {
 			$uEmail = $_POST['email'];
 			$uPassword = $_POST['password'];
 			checkRegstierDetails($uUsername, $uEmail, $uPassword);
+		} else if (isset($_GET['vid'])) {
+			try {
+				$vid = $_GET['vid'];
+				$email = db('getEmailFromVid', ['vid' => $vid]);
+				db('verifyEmail',['email' => $email[0]]);
+				$GLOBALS['errors'] .= "<script>UIkit.notification({message: 'Your email address was verified', status: 'success'})</script>";
+			} catch (Exception $e) {
+				$GLOBALS['errors'] .= "<script>UIkit.notification({message: '$e', status: 'danger'})</script>";
+			}
 		}
 	}
 } else {
 	// Authenticated
-	if (!contains($url, ['register.php', 'login.php', 'verify.php']) ) {
-		// Not authenticated and not on login.php or register.php so redirect to login.php page
+	if (contains($url, ['register.php', 'login.php', 'verify.php']) ) {
+		// Authenticated and on login.php, register.php or verify.php so redirect to index.php
 		header("Location: index.php");
 		die("Redirecting");
 	}
@@ -77,19 +87,12 @@ function createUser($uUsername, $uEmail, $uPassword) {
 	$user = db('getUserID',['username' => $uUsername]);
 	$vID = md5(rand());
 	$userID = $user[0];
-	echo $userID;
-	echo $uEmail;
-	echo $vID;
 	db('verificationEmail',['user_id' => $userID, 'email' => $uEmail, 'vid' => $vID]);
 	//sendEmail($emailToAddress, $emailToName, $Subject, $Body)
 	$verifyMessage = "Please verify your email: https://projectbin.co.uk/p/rentalSystem/www/verify.php?vid=$vID";
 	sendEmail($uEmail, $uUsername, 'Email Verification', $verifyMessage);
 	$GLOBALS['errors'] .= "<script>UIkit.notification({message: 'Please verifiy your email address. A link has been sent.', status: 'success'})</script>";
-	/* // Authenticated, redirect to home
-	$_SESSION['auth'] = True;
-	$_SESSION['username'] = $uUsername;
-	header("Location: index.php");
-	die(); */	
+	//header("Location: login.php");
 }
 
 function login($uUsername, $uPassword) {
@@ -102,6 +105,7 @@ function login($uUsername, $uPassword) {
 		$GLOBALS['errors'] .= "<script>UIkit.notification({message: 'Please verifiy your email address. A link has already sent.', status: 'success'})</script>";
 	} else if ($status == 1){
 		// Correct details and verified, redirect to home
+		echo "All good Captin!";
 		$_SESSION['auth'] = true;
 		$_SESSION['username'] = $uUsername;
 		header("Location: index.php");
