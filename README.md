@@ -34,6 +34,12 @@ Installation
 	
 #### Install Composer dependencies
 	$ composer install
+	
+#### Add to files
+ - add php files to root directory
+ - add `include_once('includes/header.php');` to the top line of all pages to be secured
+ - add `include_once('includes/footer.php');` to the last line of pages to be secured
+	
 
 ## Authors
 
