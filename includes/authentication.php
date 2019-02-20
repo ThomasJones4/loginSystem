@@ -4,7 +4,7 @@
 include_once('database.php');
 include_once('communication.php');
 
-$url = $_SERVER["REQUEST_URI"];
+$url = basename($_SERVER["REQUEST_URI"]);
 
 if (!$_SESSION['auth']) {
 	// Not authenticated
@@ -52,12 +52,16 @@ function checkLoginDetails($uUsername, $uPassword) {
 	// -1: incorrect password
 	// 0: password correct but not email verified
 	// 1: password correct and email verified
+	// 2: password correct and isAdmin
 	
-	$passwordAndVerified = db('checkPasswordAndVerified',['username' => $uUsername]); // Get password hash from db
-	$hashedPassword = $passwordAndVerified[0];
+	$user = db('checkUser',['username' => $uUsername]); // Get user info from db [0]password [1]emailVerified [2]isAdmin
+	$hashedPassword = $user['password']; // was [0]
 	if (password_verify($uPassword, $hashedPassword)) {
 		// Passwords Match
-		if($passwordAndVerified[1] == 1) {
+		if ($user['isAdmin']) {
+			// Is admin
+			return 2;
+		} else if($user['emailVerified'] == 1) { // was [1]
 			// Email verified
 			return 1;
 		} else {
@@ -105,10 +109,16 @@ function login($uUsername, $uPassword) {
 		$GLOBALS['errors'] .= "<script>UIkit.notification({message: 'Please verifiy your email address. A link has already sent.', status: 'success'})</script>";
 	} else if ($status == 1){
 		// Correct details and verified, redirect to home
-		echo "All good Captin!";
 		$_SESSION['auth'] = true;
 		$_SESSION['username'] = $uUsername;
 		header("Location: index.php");
+		die("Redirecting");
+	} else if ($status == 2) {
+		// Admin
+		$_SESSION['auth'] = true;
+		$_SESSION['admin'] = true;
+		$_SESSION['username'] = $uUsername;
+		header("Location: admin.php");
 		die("Redirecting");
 	}
 }
