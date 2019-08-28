@@ -46,7 +46,7 @@ Installation
 
 #### Configure database for users
  - An existing database can be used or use sql/database.sql for database and table
-
+ - Test username: tim password: tim
 ## Authors
 
 * **Thomas Jones** - [ThomasJones4](https://github.com/ThomasJones4)
